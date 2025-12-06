@@ -170,10 +170,10 @@ export function PromptList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-display font-semibold text-[hsl(var(--text-dark-primary))] mb-1">
+          <h2 className="text-2xl font-display font-semibold text-[hsl(var(--text-primary))] mb-1">
             我的 Prompts
           </h2>
-          <p className="text-sm text-[hsl(var(--text-dark-muted))]">
+          <p className="text-sm text-[hsl(var(--text-muted))]">
             共 {allPrompts.length} 个 Prompt
             {showFavoritesOnly && ` · ${prompts.length} 个收藏`}
             {selectedTagId && " · 已筛选"}
@@ -181,7 +181,7 @@ export function PromptList() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--text-dark-muted))]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--text-muted))]" />
             <input
               type="text"
               value={search}
@@ -209,8 +209,8 @@ export function PromptList() {
           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
             showFavoritesOnly
-              ? "bg-[hsl(var(--rose)_/_0.15)] text-[hsl(var(--rose))] border border-[hsl(var(--rose)_/_0.3)]"
-              : "bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-[hsl(var(--border-dark))] hover:border-[hsl(var(--rose)_/_0.5)] hover:text-[hsl(var(--rose))]"
+              ? "bg-rose-400/15 text-rose-400 border border-rose-400/30"
+              : "bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-muted))] border border-[hsl(var(--border))] hover:border-rose-400/50 hover:text-rose-400"
           }`}
         >
           <Heart className={`w-4 h-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
@@ -218,7 +218,7 @@ export function PromptList() {
         </button>
 
         {/* Divider */}
-        {tags.length > 0 && <div className="h-6 w-px bg-[hsl(var(--border-dark))]" />}
+        {tags.length > 0 && <div className="h-6 w-px bg-[hsl(var(--border))]" />}
 
         {/* Tag filters */}
         {tags.map((tag: Tag) => (
@@ -229,7 +229,7 @@ export function PromptList() {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               selectedTagId === tag.id
                 ? "border"
-                : "bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-[hsl(var(--border-dark))] hover:border-[hsl(var(--accent)_/_0.5)]"
+                : "bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-muted))] border border-[hsl(var(--border))] hover:border-[hsl(var(--accent)_/_0.5)]"
             }`}
             style={
               selectedTagId === tag.id
@@ -263,7 +263,7 @@ export function PromptList() {
               placeholder="标签名称"
               // biome-ignore lint/a11y/noAutofocus: intentional UX for inline tag creation
               autoFocus
-              className="w-24 px-2 py-1.5 bg-[hsl(var(--bg-dark-tertiary))] border border-[hsl(var(--accent))] rounded-lg text-sm text-[hsl(var(--text-dark-primary))] placeholder-[hsl(var(--text-dark-muted))] focus:outline-none"
+              className="w-24 px-2 py-1.5 bg-[hsl(var(--bg-elevated))] border border-[hsl(var(--accent))] rounded-lg text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none"
             />
             <button
               type="button"
@@ -279,7 +279,7 @@ export function PromptList() {
                 setIsCreatingTag(false);
                 setNewTagName("");
               }}
-              className="p-1.5 rounded-lg text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--rose))] hover:bg-[hsl(var(--rose)_/_0.1)] transition-colors"
+              className="p-1.5 rounded-lg text-[hsl(var(--text-muted))] hover:text-rose-400 hover:bg-rose-400/10 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -288,7 +288,7 @@ export function PromptList() {
           <button
             type="button"
             onClick={() => setIsCreatingTag(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-dashed border-[hsl(var(--border-dark))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] transition-all duration-200"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-muted))] border border-dashed border-[hsl(var(--border))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] transition-all duration-200"
           >
             <TagIcon className="w-3.5 h-3.5" />
             添加标签
@@ -303,7 +303,7 @@ export function PromptList() {
               setShowFavoritesOnly(false);
               setSelectedTagId(null);
             }}
-            className="flex items-center gap-1 px-2 py-1.5 text-xs text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--rose))] transition-colors"
+            className="flex items-center gap-1 px-2 py-1.5 text-xs text-[hsl(var(--text-muted))] hover:text-rose-400 transition-colors"
           >
             <X className="w-3 h-3" />
             清除筛选
@@ -316,15 +316,15 @@ export function PromptList() {
         <PromptSkeletonGrid />
       ) : prompts.length === 0 ? (
         <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--bg-dark-secondary))] border border-[hsl(var(--border-dark))] mb-6">
-            <Plus className="w-8 h-8 text-[hsl(var(--text-dark-muted))]" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--bg-secondary))] border border-[hsl(var(--border))] mb-6">
+            <Plus className="w-8 h-8 text-[hsl(var(--text-muted))]" />
           </div>
-          <h3 className="text-xl font-semibold text-[hsl(var(--text-dark-primary))] mb-3">
+          <h3 className="text-xl font-display font-semibold text-[hsl(var(--text-primary))] mb-3">
             {search || showFavoritesOnly || selectedTagId
               ? "没有找到匹配的 Prompt"
               : "还没有 Prompt"}
           </h3>
-          <p className="text-[hsl(var(--text-dark-muted))] mb-8 max-w-md mx-auto">
+          <p className="text-[hsl(var(--text-muted))] mb-8 max-w-md mx-auto">
             {search
               ? "试试其他搜索词，或者创建一个新的 Prompt"
               : showFavoritesOnly

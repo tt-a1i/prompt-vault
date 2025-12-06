@@ -50,25 +50,19 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click handler */}
       <div
-        className="absolute inset-0 bg-[hsl(var(--bg-dark)_/_0.8)] backdrop-blur-sm"
+        className="absolute inset-0 bg-[hsl(var(--bg-primary)_/_0.8)] backdrop-blur-sm"
         onClick={onCancel}
       />
       <div className="relative card w-full max-w-md p-6 mx-4 slide-down">
         <div className="flex items-start gap-4">
-          <div
-            className={`p-3 rounded-xl ${
-              isDanger ? "bg-[hsl(var(--rose)_/_0.1)]" : "bg-[hsl(var(--amber)_/_0.1)]"
-            }`}
-          >
-            <AlertTriangle
-              className={`w-5 h-5 ${isDanger ? "text-[hsl(var(--rose))]" : "text-[hsl(var(--amber))]"}`}
-            />
+          <div className={`p-3 rounded-xl ${isDanger ? "bg-rose-400/10" : "bg-amber-400/10"}`}>
+            <AlertTriangle className={`w-5 h-5 ${isDanger ? "text-rose-400" : "text-amber-400"}`} />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[hsl(var(--text-dark-primary))] mb-2">
+            <h3 className="text-lg font-display font-semibold text-[hsl(var(--text-primary))] mb-2">
               {title}
             </h3>
-            <p className="text-[hsl(var(--text-dark-muted))] text-sm">{message}</p>
+            <p className="text-[hsl(var(--text-muted))] text-sm leading-relaxed">{message}</p>
           </div>
         </div>
 
@@ -82,8 +76,8 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={`flex-1 py-2.5 font-medium text-sm rounded-xl transition-all duration-200 ${
               isDanger
-                ? "bg-[hsl(var(--rose))] hover:bg-[hsl(var(--rose)_/_0.9)] text-white"
-                : "bg-[hsl(var(--amber))] hover:bg-[hsl(var(--amber)_/_0.9)] text-[hsl(var(--bg-dark))]"
+                ? "bg-rose-500 hover:bg-rose-500/90 text-white shadow-lg shadow-rose-500/20"
+                : "bg-amber-500 hover:bg-amber-500/90 text-[hsl(var(--bg-primary))] shadow-lg shadow-amber-500/20"
             }`}
           >
             {confirmText}

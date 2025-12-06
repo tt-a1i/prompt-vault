@@ -47,19 +47,19 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click handler */}
       <div
-        className="absolute inset-0 bg-[hsl(var(--bg-dark)_/_0.8)] backdrop-blur-sm"
+        className="absolute inset-0 bg-[hsl(var(--bg-primary)_/_0.8)] backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative card w-full max-w-2xl max-h-[90vh] overflow-hidden mx-4">
+      <div className="relative card w-full max-w-2xl max-h-[90vh] overflow-hidden mx-4 slide-down">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[hsl(var(--border-dark))]">
-          <h2 className="text-lg font-semibold text-[hsl(var(--text-dark-primary))]">
+        <div className="flex items-center justify-between p-5 border-b border-[hsl(var(--border))]">
+          <h2 className="text-lg font-display font-semibold text-[hsl(var(--text-primary))]">
             {initialData ? "编辑 Prompt" : "新建 Prompt"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--text-dark-primary))] hover:bg-[hsl(var(--bg-dark-tertiary))] transition-colors"
+            className="p-2 rounded-lg text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--bg-elevated))] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -72,9 +72,9 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-[hsl(var(--text-dark-secondary))] mb-2"
+              className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
             >
-              标题 <span className="text-[hsl(var(--rose))]">*</span>
+              标题 <span className="text-rose-400">*</span>
             </label>
             <input
               id="title"
@@ -90,7 +90,7 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
           <div>
             <label
               htmlFor="description"
-              className="block text-sm font-medium text-[hsl(var(--text-dark-secondary))] mb-2"
+              className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
             >
               描述
             </label>
@@ -107,9 +107,9 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
           <div>
             <label
               htmlFor="content"
-              className="block text-sm font-medium text-[hsl(var(--text-dark-secondary))] mb-2"
+              className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
             >
-              内容 <span className="text-[hsl(var(--rose))]">*</span>
+              内容 <span className="text-rose-400">*</span>
             </label>
             <textarea
               id="content"
@@ -123,8 +123,8 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
           </div>
 
           {variables.length > 0 && (
-            <div className="p-3 rounded-xl bg-[hsl(var(--bg-dark))] border border-[hsl(var(--border-dark))]">
-              <p className="text-xs text-[hsl(var(--text-dark-muted))] mb-2">检测到的变量</p>
+            <div className="p-3 rounded-xl bg-[hsl(var(--bg-primary))] border border-[hsl(var(--border))]">
+              <p className="text-xs text-[hsl(var(--text-muted))] mb-2">检测到的变量</p>
               <div className="flex flex-wrap gap-2">
                 {variables.map((v) => (
                   <span key={v} className="tag">
@@ -146,7 +146,7 @@ export function PromptForm({ isOpen, onClose, onSubmit, initialData, isLoading }
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-[hsl(var(--bg-primary))]/30 border-t-[hsl(var(--bg-primary))] rounded-full animate-spin" />
                   保存中...
                 </span>
               ) : (
