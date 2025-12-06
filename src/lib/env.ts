@@ -1,19 +1,20 @@
 /**
- * Environment variable helper with validation
+ * Environment variables for Supabase
+ * NEXT_PUBLIC_ prefix makes them available in client components
  */
-function getEnvVar(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
-
 export const env = {
-  get SUPABASE_URL() {
-    return getEnvVar("NEXT_PUBLIC_SUPABASE_URL");
-  },
-  get SUPABASE_ANON_KEY() {
-    return getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  },
-};
+  SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+} as const;
+
+/**
+ * Validate environment variables on server startup
+ */
+export function validateEnv() {
+  if (!env.SUPABASE_URL) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
+  }
+  if (!env.SUPABASE_ANON_KEY) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+}
