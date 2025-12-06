@@ -29,33 +29,41 @@ export const promptRouter = router({
   /**
    * List all prompts for the current user
    */
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const { data, error } = await ctx.supabase
-      .from("prompts")
-      .select(
+  list: protectedProcedure
+    .input(z.object({ search: z.string().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      let query = ctx.supabase
+        .from("prompts")
+        .select(
+          `
+          *,
+          prompt_tags (
+            tags (*)
+          )
         `
-        *,
-        prompt_tags (
-          tags (*)
         )
-      `
-      )
-      .eq("user_id", ctx.user.id)
-      .order("updated_at", { ascending: false });
+        .eq("user_id", ctx.user.id);
 
-    if (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error.message,
-      });
-    }
+      // Add search filter if provided
+      if (input?.search) {
+        query = query.or(`title.ilike.%${input.search}%,content.ilike.%${input.search}%`);
+      }
 
-    // Flatten tags
-    return data.map((prompt) => ({
-      ...prompt,
-      tags: prompt.prompt_tags?.map((pt: { tags: unknown }) => pt.tags) ?? [],
-    }));
-  }),
+      const { data, error } = await query.order("updated_at", { ascending: false });
+
+      if (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message,
+        });
+      }
+
+      // Flatten tags
+      return data.map((prompt) => ({
+        ...prompt,
+        tags: prompt.prompt_tags?.map((pt: { tags: unknown }) => pt.tags) ?? [],
+      }));
+    }),
 
   /**
    * Get a single prompt by ID
@@ -223,24 +231,31 @@ export const promptRouter = router({
     }),
 
   /**
-   * Search prompts by text
+   * Toggle favorite status
    */
-  search: protectedProcedure
-    .input(z.object({ query: z.string().min(1) }))
-    .query(async ({ ctx, input }) => {
+  toggleFavorite: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // Get current status
+      const { data: existing } = await ctx.supabase
+        .from("prompts")
+        .select("user_id, is_favorite")
+        .eq("id", input.id)
+        .single();
+
+      if (!existing || existing.user_id !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only update your own prompts",
+        });
+      }
+
       const { data, error } = await ctx.supabase
         .from("prompts")
-        .select(
-          `
-          *,
-          prompt_tags (
-            tags (*)
-          )
-        `
-        )
-        .eq("user_id", ctx.user.id)
-        .textSearch("fts", input.query)
-        .order("updated_at", { ascending: false });
+        .update({ is_favorite: !existing.is_favorite })
+        .eq("id", input.id)
+        .select()
+        .single();
 
       if (error) {
         throw new TRPCError({
@@ -249,9 +264,6 @@ export const promptRouter = router({
         });
       }
 
-      return data.map((prompt) => ({
-        ...prompt,
-        tags: prompt.prompt_tags?.map((pt: { tags: unknown }) => pt.tags) ?? [],
-      }));
+      return data;
     }),
 });
