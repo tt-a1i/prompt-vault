@@ -168,23 +168,32 @@ export function PromptList() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-semibold text-white">我的 Prompts</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-display font-semibold text-[hsl(var(--text-dark-primary))] mb-1">
+            我的 Prompts
+          </h2>
+          <p className="text-sm text-[hsl(var(--text-dark-muted))]">
+            共 {allPrompts.length} 个 Prompt
+            {showFavoritesOnly && ` · ${prompts.length} 个收藏`}
+            {selectedTagId && " · 已筛选"}
+          </p>
+        </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--text-dark-muted))]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜索 Prompts..."
-              className="w-full sm:w-64 pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="input w-full sm:w-64 pl-10"
             />
           </div>
           <button
             type="button"
             onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg transition-colors whitespace-nowrap"
+            className="btn-primary flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             新建
@@ -193,15 +202,15 @@ export function PromptList() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-8 p-4 card">
         {/* Favorites filter */}
         <button
           type="button"
           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
             showFavoritesOnly
-              ? "bg-red-500/20 text-red-400 border border-red-500/30"
-              : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+              ? "bg-[hsl(var(--rose)_/_0.15)] text-[hsl(var(--rose))] border border-[hsl(var(--rose)_/_0.3)]"
+              : "bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-[hsl(var(--border-dark))] hover:border-[hsl(var(--rose)_/_0.5)] hover:text-[hsl(var(--rose))]"
           }`}
         >
           <Heart className={`w-4 h-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
@@ -209,7 +218,7 @@ export function PromptList() {
         </button>
 
         {/* Divider */}
-        {tags.length > 0 && <div className="h-6 w-px bg-gray-700" />}
+        {tags.length > 0 && <div className="h-6 w-px bg-[hsl(var(--border-dark))]" />}
 
         {/* Tag filters */}
         {tags.map((tag: Tag) => (
@@ -217,17 +226,17 @@ export function PromptList() {
             key={tag.id}
             type="button"
             onClick={() => setSelectedTagId(selectedTagId === tag.id ? null : tag.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               selectedTagId === tag.id
                 ? "border"
-                : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+                : "bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-[hsl(var(--border-dark))] hover:border-[hsl(var(--accent)_/_0.5)]"
             }`}
             style={
               selectedTagId === tag.id
                 ? {
-                    backgroundColor: `${tag.color}20`,
+                    backgroundColor: `${tag.color}15`,
                     color: tag.color,
-                    borderColor: `${tag.color}50`,
+                    borderColor: `${tag.color}40`,
                   }
                 : undefined
             }
@@ -254,13 +263,13 @@ export function PromptList() {
               placeholder="标签名称"
               // biome-ignore lint/a11y/noAutofocus: intentional UX for inline tag creation
               autoFocus
-              className="w-24 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className="w-24 px-2 py-1.5 bg-[hsl(var(--bg-dark-tertiary))] border border-[hsl(var(--accent))] rounded-lg text-sm text-[hsl(var(--text-dark-primary))] placeholder-[hsl(var(--text-dark-muted))] focus:outline-none"
             />
             <button
               type="button"
               onClick={handleCreateTag}
               disabled={!newTagName.trim() || createTagMutation.isPending}
-              className="p-1 text-green-500 hover:text-green-400 disabled:opacity-50"
+              className="p-1.5 rounded-lg text-[hsl(var(--accent))] hover:bg-[hsl(var(--accent)_/_0.1)] disabled:opacity-50 transition-colors"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -270,7 +279,7 @@ export function PromptList() {
                 setIsCreatingTag(false);
                 setNewTagName("");
               }}
-              className="p-1 text-gray-400 hover:text-gray-300"
+              className="p-1.5 rounded-lg text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--rose))] hover:bg-[hsl(var(--rose)_/_0.1)] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -279,7 +288,7 @@ export function PromptList() {
           <button
             type="button"
             onClick={() => setIsCreatingTag(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-800 text-gray-400 border border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[hsl(var(--bg-dark-tertiary))] text-[hsl(var(--text-dark-muted))] border border-dashed border-[hsl(var(--border-dark))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--accent))] transition-all duration-200"
           >
             <TagIcon className="w-3.5 h-3.5" />
             添加标签
@@ -294,7 +303,7 @@ export function PromptList() {
               setShowFavoritesOnly(false);
               setSelectedTagId(null);
             }}
-            className="flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 hover:text-gray-400 transition-colors"
+            className="flex items-center gap-1 px-2 py-1.5 text-xs text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--rose))] transition-colors"
           >
             <X className="w-3 h-3" />
             清除筛选
@@ -306,29 +315,29 @@ export function PromptList() {
       {promptsQuery.isLoading ? (
         <PromptSkeletonGrid />
       ) : prompts.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Plus className="w-8 h-8 text-gray-600" />
+        <div className="text-center py-20">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--bg-dark-secondary))] border border-[hsl(var(--border-dark))] mb-6">
+            <Plus className="w-8 h-8 text-[hsl(var(--text-dark-muted))]" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">
+          <h3 className="text-xl font-semibold text-[hsl(var(--text-dark-primary))] mb-3">
             {search || showFavoritesOnly || selectedTagId
               ? "没有找到匹配的 Prompt"
               : "还没有 Prompt"}
           </h3>
-          <p className="text-gray-400 mb-6">
+          <p className="text-[hsl(var(--text-dark-muted))] mb-8 max-w-md mx-auto">
             {search
-              ? "试试其他搜索词"
+              ? "试试其他搜索词，或者创建一个新的 Prompt"
               : showFavoritesOnly
-                ? "还没有收藏任何 Prompt"
+                ? "还没有收藏任何 Prompt，点击心形图标添加收藏"
                 : selectedTagId
-                  ? "这个标签下还没有 Prompt"
-                  : "创建你的第一个 Prompt 开始使用"}
+                  ? "这个标签下还没有 Prompt，尝试其他标签"
+                  : "创建你的第一个 Prompt，开始构建你的提示词库"}
           </p>
           {!search && !showFavoritesOnly && !selectedTagId && (
             <button
               type="button"
               onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="btn-primary inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               新建 Prompt
@@ -336,7 +345,7 @@ export function PromptList() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
           {prompts.map((prompt) => (
             <PromptCard
               key={prompt.id}

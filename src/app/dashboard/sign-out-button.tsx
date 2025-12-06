@@ -18,10 +18,10 @@ export function SignOutButton() {
     <button
       type="button"
       onClick={handleSignOut}
-      className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[hsl(var(--text-dark-muted))] hover:text-[hsl(var(--rose))] hover:bg-[hsl(var(--rose)_/_0.1)] transition-colors"
     >
       <LogOut className="w-4 h-4" />
-      <span className="text-sm">退出</span>
+      <span className="text-xs font-medium">退出</span>
     </button>
   );
 }
