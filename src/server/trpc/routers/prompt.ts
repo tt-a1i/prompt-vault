@@ -91,7 +91,7 @@ export const promptRouter = router({
         });
       }
 
-      // Check ownership
+      // Check ownership (allow access if public)
       if (data.user_id !== ctx.user.id && !data.is_public) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -109,7 +109,7 @@ export const promptRouter = router({
    * Create a new prompt
    */
   create: protectedProcedure.input(createPromptSchema).mutation(async ({ ctx, input }) => {
-    const { tagIds, ...promptData } = input;
+    const { tagIds, isPublic, ...promptData } = input;
 
     // Create prompt
     const { data: prompt, error } = await ctx.supabase
@@ -117,7 +117,7 @@ export const promptRouter = router({
       .insert({
         ...promptData,
         user_id: ctx.user.id,
-        is_public: promptData.isPublic,
+        is_public: isPublic,
       })
       .select()
       .single();
@@ -168,7 +168,7 @@ export const promptRouter = router({
       .from("prompts")
       .update({
         ...updates,
-        is_public: isPublic,
+        ...(isPublic !== undefined && { is_public: isPublic }),
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
