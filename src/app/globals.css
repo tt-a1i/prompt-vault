@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -47,7 +47,7 @@
   body {
     background: hsl(var(--bg-primary));
     color: hsl(var(--text-primary));
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -75,26 +75,20 @@
 @layer components {
   /* Display font */
   .font-display {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: "Playfair Display", Georgia, serif;
   }
 
   /* Glass card with subtle glow */
   .card {
     @apply relative rounded-2xl;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--bg-card)) 0%,
-      hsl(var(--bg-secondary)) 100%
-    );
+    background: linear-gradient(135deg, hsl(var(--bg-card)) 0%, hsl(var(--bg-secondary)) 100%);
     border: 1px solid hsl(var(--border));
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card:hover {
     border-color: hsl(var(--accent) / 0.3);
-    box-shadow:
-      0 0 0 1px hsl(var(--accent) / 0.1),
-      0 20px 40px -20px hsl(var(--accent) / 0.2);
+    box-shadow: 0 0 0 1px hsl(var(--accent) / 0.1), 0 20px 40px -20px hsl(var(--accent) / 0.2);
   }
 
   /* Primary button with shimmer */
@@ -202,15 +196,33 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 
-  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-  .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-  .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
-  .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
-  .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
-  .stagger-children > *:nth-child(9) { animation-delay: 0.45s; }
+  .stagger-children > *:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .stagger-children > *:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .stagger-children > *:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+  .stagger-children > *:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+  .stagger-children > *:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+  .stagger-children > *:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  .stagger-children > *:nth-child(7) {
+    animation-delay: 0.35s;
+  }
+  .stagger-children > *:nth-child(8) {
+    animation-delay: 0.4s;
+  }
+  .stagger-children > *:nth-child(9) {
+    animation-delay: 0.45s;
+  }
 
   /* Slide down */
   .slide-down {
@@ -241,8 +253,12 @@
   }
 
   @keyframes skeleton {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   /* Hover lift with subtle shadow */
@@ -266,7 +282,7 @@
   }
 
   .noise::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     opacity: 0.03;
