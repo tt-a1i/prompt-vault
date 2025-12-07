@@ -67,34 +67,35 @@ export default function Home() {
     },
   ];
 
+  const colorClasses = {
+    violet: {
+      bg: "bg-violet-500/5",
+      text: "text-violet-400",
+      border: "border-violet-500/20 hover:border-violet-500/40",
+      iconBg: "bg-violet-500/10",
+    },
+    fuchsia: {
+      bg: "bg-fuchsia-500/5",
+      text: "text-fuchsia-400",
+      border: "border-fuchsia-500/20 hover:border-fuchsia-500/40",
+      iconBg: "bg-fuchsia-500/10",
+    },
+    emerald: {
+      bg: "bg-emerald-500/5",
+      text: "text-emerald-400",
+      border: "border-emerald-500/20 hover:border-emerald-500/40",
+      iconBg: "bg-emerald-500/10",
+    },
+    amber: {
+      bg: "bg-amber-500/5",
+      text: "text-amber-400",
+      border: "border-amber-500/20 hover:border-amber-500/40",
+      iconBg: "bg-amber-500/10",
+    },
+  } as const;
+
   const getColorClasses = (color: string) => {
-    const colors: Record<string, { bg: string; text: string; border: string; iconBg: string }> = {
-      violet: {
-        bg: "bg-violet-500/5",
-        text: "text-violet-400",
-        border: "border-violet-500/20 hover:border-violet-500/40",
-        iconBg: "bg-violet-500/10",
-      },
-      fuchsia: {
-        bg: "bg-fuchsia-500/5",
-        text: "text-fuchsia-400",
-        border: "border-fuchsia-500/20 hover:border-fuchsia-500/40",
-        iconBg: "bg-fuchsia-500/10",
-      },
-      emerald: {
-        bg: "bg-emerald-500/5",
-        text: "text-emerald-400",
-        border: "border-emerald-500/20 hover:border-emerald-500/40",
-        iconBg: "bg-emerald-500/10",
-      },
-      amber: {
-        bg: "bg-amber-500/5",
-        text: "text-amber-400",
-        border: "border-amber-500/20 hover:border-amber-500/40",
-        iconBg: "bg-amber-500/10",
-      },
-    };
-    return colors[color] || colors.violet;
+    return colorClasses[color as keyof typeof colorClasses] ?? colorClasses.violet;
   };
 
   return (
