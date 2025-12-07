@@ -53,7 +53,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="relative max-w-6xl mx-auto px-6 lg:px-8 py-10">
+      <main className="relative max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <PromptList />
       </main>
     </div>
