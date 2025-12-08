@@ -47,9 +47,7 @@ export const promptRouter = router({
       // Add search filter if provided
       if (input?.search) {
         const searchTerm = input.search.replace(/"/g, '\\"');
-        query = query.or(
-          `title.ilike."%${searchTerm}%",content.ilike."%${searchTerm}%"`
-        );
+        query = query.or(`title.ilike."%${searchTerm}%",content.ilike."%${searchTerm}%"`);
       }
 
       const { data, error } = await query.order("updated_at", { ascending: false });
