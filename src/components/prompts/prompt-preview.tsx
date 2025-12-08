@@ -3,6 +3,7 @@
 import { extractVariables } from "@/lib/utils";
 import { Check, Copy, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface PromptPreviewProps {
   isOpen: boolean;
@@ -22,9 +23,14 @@ export function PromptPreview({
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const variableNames = extractVariables(content);
   const variablesKey = variableNames.join(",");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: using serialized key for array comparison
   useEffect(() => {
@@ -52,65 +58,82 @@ export function PromptPreview({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
-      {/* Backdrop */}
+      {/* Scrim */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click handler */}
-      <div
-        className="absolute inset-0 bg-[hsl(var(--bg-primary)_/_0.9)] backdrop-blur-md"
-        onClick={onClose}
-      />
+      <div className="scrim absolute inset-0" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] mx-4 overflow-hidden slide-down">
-        {/* Decorative gradient orbs */}
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-[hsl(var(--accent))] opacity-10 blur-[100px] rounded-full" />
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-[hsl(var(--fuchsia))] opacity-10 blur-[100px] rounded-full" />
-
+      {/* Dialog */}
+      <div className="relative w-full max-w-4xl max-h-[90vh] mx-4 overflow-hidden scale-in">
         {/* Content container */}
-        <div className="relative bg-gradient-to-b from-[hsl(var(--bg-card))] to-[hsl(var(--bg-secondary))] rounded-2xl border border-[hsl(var(--border))] overflow-hidden">
+        <div className="dialog overflow-hidden p-0">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[hsl(var(--border))]">
+          <div
+            className="flex items-center justify-between p-6 border-b"
+            style={{ borderColor: "hsl(var(--md-outline-variant))" }}
+          >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-[hsl(var(--accent-subtle))] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[hsl(var(--accent-light))]" />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: "hsl(var(--md-primary-container))" }}
+                >
+                  <Sparkles
+                    className="w-4 h-4"
+                    style={{ color: "hsl(var(--md-on-primary-container))" }}
+                  />
                 </div>
-                <h2 className="text-lg font-display font-semibold text-[hsl(var(--text-primary))] truncate">
+                <h2
+                  className="text-title-large truncate"
+                  style={{ color: "hsl(var(--md-on-surface))" }}
+                >
                   {title}
                 </h2>
               </div>
               {description && (
-                <p className="text-sm text-[hsl(var(--text-muted))] ml-11 truncate">
+                <p
+                  className="text-body-medium ml-11 truncate"
+                  style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                >
                   {description}
                 </p>
               )}
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-lg text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--bg-elevated))] transition-colors ml-4"
-            >
+            <button type="button" onClick={onClose} className="icon-btn ml-4">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Body - Two columns */}
-          <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[hsl(var(--border))]">
+          <div
+            className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x"
+            style={{ borderColor: "hsl(var(--md-outline-variant))" }}
+          >
             {/* Variables Input */}
             <div className="p-6 space-y-4 max-h-[50vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-[hsl(var(--text-secondary))]">填写变量</h3>
-                <span className="text-xs text-[hsl(var(--text-muted))]">
+                <h3 className="text-title-medium" style={{ color: "hsl(var(--md-on-surface))" }}>
+                  填写变量
+                </h3>
+                <span
+                  className="text-label-medium"
+                  style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                >
                   {Object.values(variables).filter((v) => v.trim()).length} / {variableNames.length}
                 </span>
               </div>
 
               {variableNames.length === 0 ? (
                 <div className="py-8 text-center">
-                  <p className="text-sm text-[hsl(var(--text-muted))]">此 Prompt 没有变量</p>
+                  <p
+                    className="text-body-medium"
+                    style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                  >
+                    此 Prompt 没有变量
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -118,22 +141,23 @@ export function PromptPreview({
                     <div key={v} className="group">
                       <label
                         htmlFor={`var-${v}`}
-                        className="flex items-center gap-2 text-sm text-[hsl(var(--text-secondary))] mb-1.5"
+                        className="flex items-center gap-2 text-label-large mb-1.5"
+                        style={{ color: "hsl(var(--md-on-surface-variant))" }}
                       >
                         <span
-                          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium"
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-label-medium"
                           style={{
                             backgroundColor: variables[v]?.trim()
-                              ? "hsl(var(--success) / 0.15)"
-                              : "hsl(var(--accent) / 0.15)",
+                              ? "hsl(120 60% 50% / 0.15)"
+                              : "hsl(var(--md-primary) / 0.15)",
                             color: variables[v]?.trim()
-                              ? "hsl(var(--success))"
-                              : "hsl(var(--accent-light))",
+                              ? "hsl(120 60% 40%)"
+                              : "hsl(var(--md-primary))",
                           }}
                         >
                           {index + 1}
                         </span>
-                        <code className="text-[hsl(var(--accent-light))]">{v}</code>
+                        <code style={{ color: "hsl(var(--md-primary))" }}>{v}</code>
                       </label>
                       <input
                         id={`var-${v}`}
@@ -143,9 +167,15 @@ export function PromptPreview({
                         onFocus={() => setActiveField(v)}
                         onBlur={() => setActiveField(null)}
                         placeholder={`输入 ${v} 的值...`}
-                        className={`input transition-all duration-300 ${
-                          activeField === v ? "ring-2 ring-[hsl(var(--accent)_/_0.3)]" : ""
-                        } ${variables[v]?.trim() ? "border-[hsl(var(--success)_/_0.3)]" : ""}`}
+                        className="input-outlined transition-all duration-200"
+                        style={{
+                          borderColor:
+                            activeField === v
+                              ? "hsl(var(--md-primary))"
+                              : variables[v]?.trim()
+                                ? "hsl(120 60% 50% / 0.5)"
+                                : undefined,
+                        }}
                       />
                     </div>
                   ))}
@@ -156,9 +186,17 @@ export function PromptPreview({
             {/* Preview Output */}
             <div className="p-6 flex flex-col max-h-[50vh]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-[hsl(var(--text-secondary))]">预览结果</h3>
+                <h3 className="text-title-medium" style={{ color: "hsl(var(--md-on-surface))" }}>
+                  预览结果
+                </h3>
                 {allFilled && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-[hsl(var(--success)_/_0.15)] text-[hsl(var(--success))]">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-label-medium"
+                    style={{
+                      background: "hsl(120 60% 50% / 0.15)",
+                      color: "hsl(120 60% 40%)",
+                    }}
+                  >
                     <Check className="w-3 h-3" />
                     已填写完成
                   </span>
@@ -167,7 +205,7 @@ export function PromptPreview({
 
               {/* Preview content with highlighted variables */}
               <div className="flex-1 overflow-y-auto">
-                <div className="code-block min-h-[200px] text-sm whitespace-pre-wrap leading-relaxed">
+                <div className="code-block min-h-[200px] text-body-medium whitespace-pre-wrap leading-relaxed">
                   {content.split(/(\{\{[^}]+\}\})/).map((part) => {
                     const match = part.match(/\{\{([^}]+)\}\}/);
                     if (match?.[1]) {
@@ -177,7 +215,11 @@ export function PromptPreview({
                         return (
                           <span
                             key={`filled-${varName}-${part}`}
-                            className="px-1.5 py-0.5 rounded bg-[hsl(var(--success)_/_0.15)] text-[hsl(var(--success))] font-medium"
+                            className="px-1.5 py-0.5 rounded-lg font-medium"
+                            style={{
+                              background: "hsl(120 60% 50% / 0.15)",
+                              color: "hsl(120 60% 40%)",
+                            }}
                           >
                             {value}
                           </span>
@@ -186,7 +228,12 @@ export function PromptPreview({
                       return (
                         <span
                           key={`empty-${varName}-${part}`}
-                          className="px-1.5 py-0.5 rounded bg-[hsl(var(--accent)_/_0.2)] text-[hsl(var(--accent-light))] border border-dashed border-[hsl(var(--accent)_/_0.3)]"
+                          className="px-1.5 py-0.5 rounded-lg"
+                          style={{
+                            background: "hsl(var(--md-primary) / 0.15)",
+                            color: "hsl(var(--md-primary))",
+                            border: "1px dashed hsl(var(--md-primary) / 0.3)",
+                          }}
                         >
                           {`{{${varName}}}`}
                         </span>
@@ -200,14 +247,17 @@ export function PromptPreview({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-4 p-6 border-t border-[hsl(var(--border))] bg-[hsl(var(--bg-secondary)_/_0.5)]">
-            <p className="text-xs text-[hsl(var(--text-muted))]">
+          <div
+            className="flex items-center justify-between gap-4 p-6 border-t"
+            style={{ borderColor: "hsl(var(--md-outline-variant))" }}
+          >
+            <p className="text-label-medium" style={{ color: "hsl(var(--md-on-surface-variant))" }}>
               {allFilled ? (
                 "所有变量已填写，可以复制使用"
               ) : (
                 <>
                   还有{" "}
-                  <span className="text-[hsl(var(--accent-light))]">
+                  <span style={{ color: "hsl(var(--md-primary))" }}>
                     {variableNames.length - Object.values(variables).filter((v) => v.trim()).length}
                   </span>{" "}
                   个变量未填写
@@ -215,15 +265,20 @@ export function PromptPreview({
               )}
             </p>
             <div className="flex gap-3">
-              <button type="button" onClick={onClose} className="btn-secondary">
+              <button type="button" onClick={onClose} className="btn-outlined">
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`btn-primary flex items-center gap-2 ${
-                  copied ? "!bg-[hsl(var(--success))] !text-white" : ""
-                }`}
+                className="btn-primary flex items-center gap-2"
+                style={
+                  copied
+                    ? {
+                        background: "hsl(120 60% 45%)",
+                      }
+                    : undefined
+                }
               >
                 {copied ? (
                   <>
@@ -241,6 +296,7 @@ export function PromptPreview({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

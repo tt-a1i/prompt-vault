@@ -181,40 +181,48 @@ export function PromptList() {
   return (
     <div className="animate-fade-in">
       <div className="grid lg:grid-cols-[240px_1fr] gap-10 items-start">
-        {/* Sidebar (Desktop) */}
+        {/* Sidebar (Desktop) - MD3 Navigation Drawer */}
         <aside className="hidden lg:block space-y-8 sticky top-24">
-          <div className="space-y-4">
-            <h3 className="px-3 text-xs font-semibold text-[hsl(var(--text-muted))] uppercase tracking-wider">
+          <div className="card p-4 space-y-4">
+            <h3
+              className="px-3 text-label-medium uppercase tracking-wider"
+              style={{ color: "hsl(var(--md-on-surface-variant))" }}
+            >
               Library
             </h3>
             <div className="space-y-1">
               <button
                 type="button"
                 onClick={() => setSelectedTagId(null)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  !selectedTagId
-                    ? "bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-primary))]"
-                    : "text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--bg-elevated)_/_0.5)]"
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-label-large transition-all duration-200 state-layer ${
+                  !selectedTagId ? "chip-selected" : ""
                 }`}
+                style={{
+                  color: !selectedTagId
+                    ? "hsl(var(--md-on-secondary-container))"
+                    : "hsl(var(--md-on-surface-variant))",
+                }}
               >
                 <Compass className="w-4 h-4" />
                 全部 Prompts
               </button>
-              {/* Future: Favorites, Recent, etc. */}
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="card p-4 space-y-4">
             <div className="flex items-center justify-between px-3">
-              <h3 className="text-xs font-semibold text-[hsl(var(--text-muted))] uppercase tracking-wider">
+              <h3
+                className="text-label-medium uppercase tracking-wider"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
+              >
                 Tags
               </h3>
               <button
                 type="button"
                 onClick={() => setIsCreatingTag(!isCreatingTag)}
-                className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--accent))] transition-colors"
+                className="icon-btn w-8 h-8"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
 
@@ -224,19 +232,26 @@ export function PromptList() {
                   key={tag.id}
                   type="button"
                   onClick={() => setSelectedTagId(selectedTagId === tag.id ? null : tag.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
-                    selectedTagId === tag.id
-                      ? "bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-primary))]"
-                      : "text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--bg-elevated)_/_0.5)] hover:text-[hsl(var(--text-primary))]"
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-full text-label-large transition-all duration-200 state-layer ${
+                    selectedTagId === tag.id ? "chip-selected" : ""
                   }`}
+                  style={{
+                    color:
+                      selectedTagId === tag.id
+                        ? "hsl(var(--md-on-secondary-container))"
+                        : "hsl(var(--md-on-surface-variant))",
+                  }}
                 >
                   <span
-                    className="w-2 h-2 rounded-full transition-transform group-hover:scale-110"
+                    className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: tag.color }}
                   />
                   <span className="truncate flex-1 text-left">{tag.name}</span>
                   {selectedTagId === tag.id && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]" />
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: "hsl(var(--md-primary))" }}
+                    />
                   )}
                 </button>
               ))}
@@ -258,7 +273,7 @@ export function PromptList() {
                       placeholder="新标签..."
                       // biome-ignore lint/a11y/noAutofocus: intentional UX
                       autoFocus
-                      className="w-full px-2 py-1.5 bg-[hsl(var(--bg-card))] border border-[hsl(var(--accent))] rounded text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+                      className="input-outlined text-label-large py-2"
                     />
                   </div>
                 </div>
@@ -270,7 +285,7 @@ export function PromptList() {
         {/* Mobile Filter Header */}
         <div className="lg:hidden flex flex-col gap-4 mb-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-display font-semibold text-[hsl(var(--text-primary))]">
+            <h2 className="text-headline-medium" style={{ color: "hsl(var(--md-on-surface))" }}>
               Prompts
             </h2>
             <button
@@ -287,11 +302,7 @@ export function PromptList() {
             <button
               type="button"
               onClick={() => setSelectedTagId(null)}
-              className={`flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                !selectedTagId
-                  ? "bg-[hsl(var(--text-primary))] text-[hsl(var(--bg-primary))] border-transparent"
-                  : "bg-transparent text-[hsl(var(--text-muted))] border-[hsl(var(--border))] hover:border-[hsl(var(--text-muted))]"
-              }`}
+              className={`flex-none chip ${!selectedTagId ? "chip-selected" : ""}`}
             >
               全部
             </button>
@@ -300,13 +311,9 @@ export function PromptList() {
                 key={tag.id}
                 type="button"
                 onClick={() => setSelectedTagId(selectedTagId === tag.id ? null : tag.id)}
-                className={`flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  selectedTagId === tag.id
-                    ? "bg-[hsl(var(--bg-elevated))] text-[hsl(var(--text-primary))] border-[hsl(var(--accent))]"
-                    : "bg-transparent text-[hsl(var(--text-muted))] border-[hsl(var(--border))] hover:border-[hsl(var(--text-muted))]"
-                }`}
+                className={`flex-none chip ${selectedTagId === tag.id ? "chip-selected" : ""}`}
               >
-                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tag.color }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.color }} />
                 {tag.name}
               </button>
             ))}
@@ -318,22 +325,25 @@ export function PromptList() {
           {/* Top Bar */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="relative w-full sm:max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--text-muted))]" />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
+              />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="搜索 Prompt..."
-                className="input w-full pl-10 h-11 bg-[hsl(var(--bg-elevated)_/_0.4)] hover:bg-[hsl(var(--bg-elevated)_/_0.7)] focus:bg-[hsl(var(--bg-elevated))]"
+                className="input-outlined w-full pl-11 h-12"
               />
             </div>
 
             <button
               type="button"
               onClick={() => setIsFormOpen(true)}
-              className="hidden lg:flex btn-primary items-center gap-2 shadow-lg shadow-[hsl(var(--accent))]/20 hover:shadow-[hsl(var(--accent))]/40"
+              className="hidden lg:flex fab-extended"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               <span>新建 Prompt</span>
             </button>
           </div>
@@ -342,18 +352,27 @@ export function PromptList() {
           {promptsQuery.isLoading ? (
             <PromptSkeletonGrid />
           ) : prompts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl border-2 border-dashed border-[hsl(var(--border)_/_0.5)] bg-[hsl(var(--bg-elevated)_/_0.2)]">
-              <div className="w-16 h-16 mb-4 rounded-2xl bg-[hsl(var(--bg-elevated))] flex items-center justify-center">
-                <LayoutGrid className="w-8 h-8 text-[hsl(var(--text-muted))]" />
+            <div className="card flex flex-col items-center justify-center py-20 text-center">
+              <div
+                className="w-16 h-16 mb-4 rounded-2xl flex items-center justify-center"
+                style={{ background: "hsl(var(--md-surface-container-high))" }}
+              >
+                <LayoutGrid
+                  className="w-8 h-8"
+                  style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                />
               </div>
-              <h3 className="text-xl font-medium text-[hsl(var(--text-primary))] mb-2">
+              <h3 className="text-title-large mb-2" style={{ color: "hsl(var(--md-on-surface))" }}>
                 {search ? "未找到相关结果" : "暂无 Prompt"}
               </h3>
-              <p className="text-[hsl(var(--text-muted))] max-w-xs mb-6">
+              <p
+                className="text-body-medium max-w-xs mb-6"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
+              >
                 {search ? "尝试更换搜索关键词" : "创建一个新的 Prompt 开始你的创作之旅"}
               </p>
               {!search && (
-                <button type="button" onClick={() => setIsFormOpen(true)} className="btn-secondary">
+                <button type="button" onClick={() => setIsFormOpen(true)} className="btn-primary">
                   创建 Prompt
                 </button>
               )}
