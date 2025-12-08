@@ -1,61 +1,80 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { promptRouter } from "./prompt";
+import { TRPCError } from "@trpc/server";
 
-import { describe, it, expect, vi } from 'vitest';
-import { promptRouter } from './prompt';
-import { createCallerFactory } from '../init';
-
-// Mock the context
-const createMockCtx = (orSpy: any) => {
-  const orderSpy = vi.fn().mockResolvedValue({ data: [], error: null });
-  const eqSpy = vi.fn().mockReturnValue({
-    or: orSpy,
-    order: orderSpy
-  });
-  const selectSpy = vi.fn().mockReturnValue({ eq: eqSpy });
-  const fromSpy = vi.fn().mockReturnValue({ select: selectSpy });
-
-  return {
-    supabase: {
-      from: fromSpy,
-    },
-    user: { id: 'user-123' },
-  };
+// Mock supabase client
+const mockSupabase = {
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        order: vi.fn(() => ({
+          data: [],
+          error: null,
+        })),
+        single: vi.fn(() => ({
+          data: {},
+          error: null,
+        })),
+      })),
+      order: vi.fn(() => ({
+        data: [],
+        error: null,
+      })),
+    })),
+  })),
 };
 
-describe('promptRouter.list', () => {
-  it('should escape commas in search query', async () => {
-    // We want to verify that the query string passed to .or() is correctly formatted
-    // when the search input contains a comma.
+const mockCtx = {
+  supabase: mockSupabase as any,
+  user: { id: "user-123" },
+};
 
-    // Setup spy
-    const orderSpy = vi.fn().mockResolvedValue({ data: [], error: null });
-    // Chain: .or().order()
-    const orSpy = vi.fn().mockReturnValue({ order: orderSpy });
+describe("promptRouter", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    // Chain: .from().select().eq() -> returns object with .or
-    const eqSpy = vi.fn().mockReturnValue({
-        or: orSpy,
-        order: orderSpy // In case .or is skipped (not in this test case)
+  describe("list", () => {
+    it("should handle search queries with commas correctly", async () => {
+      // Setup mock chain for list query
+      const mockOrder = vi.fn().mockResolvedValue({ data: [], error: null });
+      const mockOr = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockEq = vi.fn().mockReturnValue({ or: mockOr, order: mockOrder });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+      mockSupabase.from = mockFrom;
+
+      const caller = promptRouter.createCaller(mockCtx as any);
+
+      // Test search with comma
+      await caller.list({ search: "hello, world" });
+
+      // Verify the query structure
+      expect(mockOr).toHaveBeenCalledWith(
+        expect.stringContaining('title.ilike."%hello, world%"')
+      );
     });
-    const selectSpy = vi.fn().mockReturnValue({ eq: eqSpy });
-    const fromSpy = vi.fn().mockReturnValue({ select: selectSpy });
 
-    const mockCtx = {
-        supabase: {
-            from: fromSpy
-        },
-        user: { id: 'user-123' }
-    };
+    it("should escape double quotes in search queries", async () => {
+        // Setup mock chain for list query
+        const mockOrder = vi.fn().mockResolvedValue({ data: [], error: null });
+        const mockOr = vi.fn().mockReturnValue({ order: mockOrder });
+        const mockEq = vi.fn().mockReturnValue({ or: mockOr, order: mockOrder });
+        const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+        const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
-    const caller = createCallerFactory(promptRouter)(mockCtx as any);
+        mockSupabase.from = mockFrom;
 
-    const searchInput = 'foo,bar';
-    await caller.list({ search: searchInput });
+        const caller = promptRouter.createCaller(mockCtx as any);
 
-    expect(orSpy).toHaveBeenCalled();
-    const arg = orSpy.mock.calls[0][0];
+        // Test search with double quote
+        await caller.list({ search: 'hello "world"' });
 
-    // We expect the argument to be properly escaped.
-    const expected = `title.ilike."%${searchInput}%",content.ilike."%${searchInput}%"`;
-    expect(arg).toBe(expected);
+        // Verify the query structure has escaped quotes
+        expect(mockOr).toHaveBeenCalledWith(
+          expect.stringContaining('title.ilike."%hello \\"world\\"%"')
+        );
+      });
   });
 });

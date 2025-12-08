@@ -46,9 +46,10 @@ export const promptRouter = router({
 
       // Add search filter if provided
       if (input?.search) {
+        // Fix: Wrap search term in quotes to handle commas correctly
         const searchTerm = input.search.replace(/"/g, '\\"');
         query = query.or(
-          `title.ilike."%${searchTerm}%",content.ilike."%${searchTerm}%"`
+          `title.ilike."%${searchTerm}%",content.ilike."%${searchTerm}%"`,
         );
       }
 
