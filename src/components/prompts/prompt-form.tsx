@@ -85,34 +85,34 @@ export function PromptForm({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      {/* Scrim */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click handler */}
-      <div
-        className="absolute inset-0 bg-[hsl(var(--bg-primary)_/_0.8)] backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative card w-full max-w-2xl max-h-[85vh] slide-down flex flex-col">
+      <div className="scrim absolute inset-0" onClick={onClose} />
+
+      {/* Dialog */}
+      <div className="dialog relative w-full max-w-2xl max-h-[85vh] scale-in flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[hsl(var(--border))] shrink-0">
-          <h2 className="text-lg font-display font-semibold text-[hsl(var(--text-primary))]">
+        <div
+          className="flex items-center justify-between pb-4 border-b shrink-0"
+          style={{ borderColor: "hsl(var(--md-outline-variant))" }}
+        >
+          <h2 className="text-headline-medium" style={{ color: "hsl(var(--md-on-surface))" }}>
             {initialData ? "编辑 Prompt" : "新建 Prompt"}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--bg-elevated))] transition-colors"
-          >
+          <button type="button" onClick={onClose} className="icon-btn">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="p-5 space-y-5 overflow-y-auto flex-1">
+          <div className="py-4 space-y-5 overflow-y-auto flex-1">
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
+                className="block text-label-large mb-2"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
               >
-                标题 <span className="text-rose-400">*</span>
+                标题 <span style={{ color: "hsl(var(--md-error))" }}>*</span>
               </label>
               <input
                 id="title"
@@ -128,7 +128,8 @@ export function PromptForm({
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
+                className="block text-label-large mb-2"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
               >
                 描述
               </label>
@@ -144,22 +145,31 @@ export function PromptForm({
 
             {/* Tags */}
             <div>
-              <span className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2">
+              <span
+                className="block text-label-large mb-2"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
+              >
                 标签
               </span>
               <div className="relative">
                 {/* Selected tags + Add button */}
-                <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-[hsl(var(--bg-elevated))] border border-[hsl(var(--border))] min-h-[48px]">
+                <div
+                  className="flex flex-wrap items-center gap-2 p-3 rounded-2xl min-h-[48px]"
+                  style={{
+                    background: "hsl(var(--md-surface-container-highest))",
+                    border: "1px solid hsl(var(--md-outline-variant))",
+                  }}
+                >
                   {selectedTags.map((tag) => (
                     <button
                       key={tag.id}
                       type="button"
                       onClick={() => toggleTag(tag.id)}
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm transition-colors"
+                      className="chip"
                       style={{
                         backgroundColor: `${tag.color}20`,
                         color: tag.color,
-                        border: `1px solid ${tag.color}40`,
+                        borderColor: `${tag.color}40`,
                       }}
                     >
                       <span
@@ -174,14 +184,18 @@ export function PromptForm({
                     <button
                       type="button"
                       onClick={() => setShowTagDropdown(!showTagDropdown)}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--accent))] hover:bg-[hsl(var(--accent)_/_0.1)] border border-dashed border-[hsl(var(--border))] hover:border-[hsl(var(--accent))] transition-colors"
+                      className="chip"
+                      style={{ borderStyle: "dashed" }}
                     >
                       <Plus className="w-3.5 h-3.5" />
                       添加标签
                     </button>
                   )}
                   {availableTags.length === 0 && (
-                    <span className="text-sm text-[hsl(var(--text-muted))]">
+                    <span
+                      className="text-body-medium"
+                      style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                    >
                       暂无标签，请先在列表页创建标签
                     </span>
                   )}
@@ -192,7 +206,10 @@ export function PromptForm({
                   <>
                     {/* biome-ignore lint/a11y/useKeyWithClickEvents: dropdown backdrop */}
                     <div className="fixed inset-0 z-10" onClick={() => setShowTagDropdown(false)} />
-                    <div className="absolute left-0 right-0 top-full mt-2 z-20 bg-[hsl(var(--bg-elevated))] rounded-xl shadow-2xl border border-[hsl(var(--border))] p-2 slide-down">
+                    <div
+                      className="absolute left-0 right-0 top-full mt-2 z-20 rounded-2xl shadow-lg p-2 scale-in"
+                      style={{ background: "hsl(var(--md-surface-container))" }}
+                    >
                       {unselectedTags.map((tag) => (
                         <button
                           key={tag.id}
@@ -203,7 +220,8 @@ export function PromptForm({
                               setShowTagDropdown(false);
                             }
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--bg-card))] transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-label-large state-layer"
+                          style={{ color: "hsl(var(--md-on-surface))" }}
                         >
                           <span
                             className="w-3 h-3 rounded-full"
@@ -211,7 +229,10 @@ export function PromptForm({
                           />
                           {tag.name}
                           {selectedTagIds.includes(tag.id) && (
-                            <Check className="w-4 h-4 ml-auto text-[hsl(var(--accent))]" />
+                            <Check
+                              className="w-4 h-4 ml-auto"
+                              style={{ color: "hsl(var(--md-primary))" }}
+                            />
                           )}
                         </button>
                       ))}
@@ -224,9 +245,10 @@ export function PromptForm({
             <div>
               <label
                 htmlFor="content"
-                className="block text-sm font-medium text-[hsl(var(--text-secondary))] mb-2"
+                className="block text-label-large mb-2"
+                style={{ color: "hsl(var(--md-on-surface-variant))" }}
               >
-                内容 <span className="text-rose-400">*</span>
+                内容 <span style={{ color: "hsl(var(--md-error))" }}>*</span>
               </label>
               <textarea
                 id="content"
@@ -235,13 +257,24 @@ export function PromptForm({
                 placeholder="输入你的 Prompt 内容，使用 {{变量名}} 定义变量"
                 required
                 rows={8}
-                className="input font-mono text-sm resize-none"
+                className="input font-mono text-body-medium resize-none"
               />
             </div>
 
             {variables.length > 0 && (
-              <div className="p-3 rounded-xl bg-[hsl(var(--bg-primary))] border border-[hsl(var(--border))]">
-                <p className="text-xs text-[hsl(var(--text-muted))] mb-2">检测到的变量</p>
+              <div
+                className="p-3 rounded-2xl"
+                style={{
+                  background: "hsl(var(--md-surface-container-lowest))",
+                  border: "1px solid hsl(var(--md-outline-variant))",
+                }}
+              >
+                <p
+                  className="text-label-medium mb-2"
+                  style={{ color: "hsl(var(--md-on-surface-variant))" }}
+                >
+                  检测到的变量
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {variables.map((v) => (
                     <span key={v} className="tag">
@@ -254,9 +287,12 @@ export function PromptForm({
           </div>
 
           {/* Footer - Fixed at bottom */}
-          <div className="p-5 border-t border-[hsl(var(--border))] shrink-0">
+          <div
+            className="pt-4 border-t shrink-0"
+            style={{ borderColor: "hsl(var(--md-outline-variant))" }}
+          >
             <div className="flex gap-3">
-              <button type="button" onClick={onClose} className="btn-secondary flex-1">
+              <button type="button" onClick={onClose} className="btn-outlined flex-1">
                 取消
               </button>
               <button
@@ -266,7 +302,7 @@ export function PromptForm({
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-[hsl(var(--bg-primary))]/30 border-t-[hsl(var(--bg-primary))] rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     保存中...
                   </span>
                 ) : (

@@ -1,7 +1,8 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -25,6 +26,11 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -42,48 +48,64 @@ export function ConfirmDialog({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onCancel]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const isDanger = variant === "danger";
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
+      {/* Scrim */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click handler */}
-      <div
-        className="absolute inset-0 bg-[hsl(var(--bg-primary)_/_0.8)] backdrop-blur-sm"
-        onClick={onCancel}
-      />
-      <div className="relative card w-full max-w-md p-6 mx-4 slide-down">
+      <div className="scrim absolute inset-0" onClick={onCancel} />
+
+      {/* Dialog */}
+      <div className="dialog relative w-full max-w-md mx-4 scale-in">
         <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-xl ${isDanger ? "bg-rose-400/10" : "bg-amber-400/10"}`}>
-            <AlertTriangle className={`w-5 h-5 ${isDanger ? "text-rose-400" : "text-amber-400"}`} />
+          <div
+            className="p-3 rounded-xl"
+            style={{
+              background: isDanger ? "hsl(var(--md-error) / 0.15)" : "hsl(45 100% 50% / 0.15)",
+            }}
+          >
+            <AlertTriangle
+              className="w-5 h-5"
+              style={{
+                color: isDanger ? "hsl(var(--md-error))" : "hsl(45 100% 40%)",
+              }}
+            />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-display font-semibold text-[hsl(var(--text-primary))] mb-2">
+            <h3 className="text-title-large mb-2" style={{ color: "hsl(var(--md-on-surface))" }}>
               {title}
             </h3>
-            <p className="text-[hsl(var(--text-muted))] text-sm leading-relaxed">{message}</p>
+            <p
+              className="text-body-medium leading-relaxed"
+              style={{ color: "hsl(var(--md-on-surface-variant))" }}
+            >
+              {message}
+            </p>
           </div>
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button type="button" onClick={onCancel} className="btn-secondary flex-1">
+          <button type="button" onClick={onCancel} className="btn-outlined flex-1">
             {cancelText}
           </button>
           <button
             ref={confirmRef}
             type="button"
             onClick={onConfirm}
-            className={`flex-1 py-2.5 font-medium text-sm rounded-xl transition-all duration-200 ${
-              isDanger
-                ? "bg-rose-500 hover:bg-rose-500/90 text-white shadow-lg shadow-rose-500/20"
-                : "bg-amber-500 hover:bg-amber-500/90 text-[hsl(var(--bg-primary))] shadow-lg shadow-amber-500/20"
-            }`}
+            className="flex-1 py-3 font-medium text-label-large rounded-full transition-all duration-200"
+            style={{
+              background: isDanger ? "hsl(var(--md-error))" : "hsl(45 100% 45%)",
+              color: isDanger ? "hsl(var(--md-on-error))" : "hsl(45 100% 10%)",
+            }}
           >
             {confirmText}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

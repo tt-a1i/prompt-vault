@@ -14,35 +14,42 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--bg-primary))] noise">
-      {/* Ambient gradient orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* MD3 Background - Subtle gradient */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute -top-40 right-1/4 w-[800px] h-[800px] bg-[hsl(var(--accent))] opacity-[0.04] blur-[180px] rounded-full animate-pulse"
-          style={{ animationDuration: "8s" }}
+          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px]"
+          style={{ background: "hsl(var(--md-primary) / 0.1)" }}
         />
         <div
-          className="absolute bottom-0 -left-40 w-[600px] h-[600px] bg-[hsl(var(--fuchsia))] opacity-[0.03] blur-[150px] rounded-full animate-pulse"
-          style={{ animationDuration: "12s" }}
+          className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: "hsl(var(--md-tertiary) / 0.08)" }}
         />
       </div>
 
-      {/* Header */}
-      <header className="relative border-b border-[hsl(var(--border)_/_0.5)] bg-[hsl(var(--bg-primary)_/_0.9)] backdrop-blur-2xl sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
+      {/* Header - MD3 Top App Bar */}
+      <header className="nav-bar fixed top-0 left-0 right-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-display text-[hsl(var(--text-primary))] tracking-tight">
-                Prompt<span className="text-gradient font-semibold">Vault</span>
-              </h1>
+              <a
+                href="/"
+                className="text-title-large"
+                style={{ color: "hsl(var(--md-on-surface))" }}
+              >
+                Prompt<span style={{ color: "hsl(var(--md-primary))" }}>Vault</span>
+              </a>
             </div>
 
             {/* User section */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[hsl(var(--bg-elevated)_/_0.6)] border border-[hsl(var(--border)_/_0.5)]">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-                <span className="text-xs text-[hsl(var(--text-secondary))] max-w-[120px] truncate">
+              <div className="chip">
+                <div
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ background: "hsl(120 60% 50%)" }}
+                />
+                <span className="max-w-[120px] truncate">
                   {user.user_metadata?.user_name || user.email?.split("@")[0]}
                 </span>
               </div>
@@ -53,7 +60,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto px-6 lg:px-8 py-10">
+      <main className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-12">
         <PromptList />
       </main>
     </div>
