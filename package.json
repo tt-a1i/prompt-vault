@@ -31,8 +31,12 @@
     "zod": "^4.1.13"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["biome check --write"],
-    "*.{json,md}": ["biome format --write"]
+    "*.{ts,tsx,js,jsx}": [
+      "biome check --write"
+    ],
+    "*.{json,md}": [
+      "biome format --write"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -44,6 +48,8 @@
     "lint-staged": "^16.2.7",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.15"
   }
 }
