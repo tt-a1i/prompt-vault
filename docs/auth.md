@@ -1,54 +1,92 @@
 # 认证架构 (Authentication Architecture)
 
-认证系统由 Supabase Auth 驱动，结合 Next.js Middleware 和 tRPC Context 实现了完整的安全流程。
+认证是全栈应用中最复杂的部分之一。本项目利用 **Supabase Auth** 和 **Next.js Middleware** 实现了一套安全、无缝的认证流程。
 
-## 核心流程
+## 认证流程图 (Authentication Flows)
 
-1.  **用户登录**: 用户在前端通过 Supabase Client (Browser) 登录（例如使用 OAuth 或邮箱密码）。
-2.  **Session 存储**: Supabase SDK 自动将 JWT (Access Token) 存储在 Cookie 中。
-3.  **请求拦截**: 所有的页面请求和 API 请求都会携带这些 Cookie。
-4.  **中间件校验**: Next.js Middleware 拦截请求，刷新 Session，并决定是否允许访问。
-5.  **服务端获取用户**: 在 tRPC Context 或 Server Components 中，通过 `getUser()` 获取当前用户。
+以下是用户登录、会话维持和登出的完整时序图。
 
-## 详细实现
+```mermaid
+sequenceDiagram
+    participant User
+    participant Client as Client (Browser)
+    participant Middleware as Next.js Middleware
+    participant SupabaseAuth as Supabase Auth (GoTrue)
+    participant Database as Database (RLS)
 
-### 1. Middleware (`src/middleware.ts`)
+    %% Login Flow
+    Note over User, Database: 1. 登录流程 (OAuth/Password)
+    User->>Client: 点击登录 (GitHub)
+    Client->>SupabaseAuth: signInWithOAuth()
+    SupabaseAuth-->>Client: Redirect to Provider
+    Client->>User: GitHub Authorize Page
+    User->>Client: Approve
+    Client->>SupabaseAuth: Callback with Code
+    SupabaseAuth-->>Client: Return Session (Access/Refresh Token)
+    Client->>Client: Set Cookie (sb-access-token)
 
-这是保护路由的第一道防线。
+    %% Session Refresh Flow
+    Note over User, Database: 2. 会话保持与刷新 (Middleware)
+    User->>Client: 访问受保护页面 (/dashboard)
+    Client->>Middleware: HTTP Request (with Cookie)
+    activate Middleware
+    Middleware->>SupabaseAuth: auth.getUser() (Verify Token)
+    alt Token Valid
+        SupabaseAuth-->>Middleware: User Session
+        Middleware-->>Client: Pass Request
+    else Token Expired
+        Middleware->>SupabaseAuth: Refresh Token (using Refresh Token)
+        SupabaseAuth-->>Middleware: New Access Token
+        Middleware-->>Client: Response + Set-Cookie (New Token)
+    end
+    deactivate Middleware
 
-*   **Session 刷新**: 调用 `updateSession` (`src/lib/supabase/middleware.ts`)。这非常重要，因为它会检查 Cookie 中的 Token 是否过期，如果过期则尝试刷新，并**将新的 Set-Cookie header 写入 Response**。
-*   **路由保护**:
-    *   检查 `request.nextUrl.pathname`。
-    *   如果用户未登录 (`!user`) 且访问 `/dashboard` 或 `/prompts`，重定向到 `/login`。
-    *   如果用户已登录 (`user`) 且访问 `/login`，重定向到 `/dashboard`。
-
-### 2. tRPC Context 保护 (`src/server/trpc/init.ts`)
-
-这是 API 层的防线。
-
-*   在 `createTRPCContext` 中，我们调用 `supabase.auth.getUser()`。
-*   `protectedProcedure` 中间件会检查 context 中是否有 `user`。
-*   如果没有 `user`，直接抛出 `TRPCError` (UNAUTHORIZED)。这确保了即使中间件配置失误，API 接口本身也是安全的。
-
-### 3. Row Level Security (RLS)
-
-这是数据层的最后一道防线。
-
-即使有人绕过了前端和 API 层，直接向 Supabase 发起请求（持有 Anon Key），数据库的 RLS 策略也会阻止他们访问不属于他们的数据。
-*   `auth.uid()`: Supabase Postgres 中的特殊函数，返回当前请求的 User ID。
-
-## 客户端 Supabase (`src/lib/supabase/client.ts`)
-
-用于浏览器端的交互，例如：
-
-```typescript
-const supabase = createClient();
-
-// 登录
-await supabase.auth.signInWithOAuth({ provider: 'github' });
-
-// 登出
-await supabase.auth.signOut();
+    %% Data Access Flow
+    Note over User, Database: 3. 数据访问 (RLS)
+    Client->>Database: Select * from prompts
+    Database->>Database: Check RLS: auth.uid() == user_id
+    Database-->>Client: Return Data
 ```
 
-注意：在组件中创建客户端时，应该使用 `createBrowserClient`，它会自动处理浏览器环境下的 Cookie。
+## 关键技术点
+
+### 1. PKCE 流程 (Proof Key for Code Exchange)
+我们在服务端认证（SSR）中强制使用 PKCE 流程。
+*   **安全性**: 防止授权码拦截攻击。
+*   **机制**: 在重定向登录时生成一个 code_verifier，在回调时验证这个 verifier。`@supabase/ssr` 库自动处理这一切。
+
+### 2. Middleware 的核心作用
+文件：`src/middleware.ts` & `src/lib/supabase/middleware.ts`
+
+Middleware 在 Next.js 中极其关键，因为它运行在任何页面渲染之前。
+*   **Session 刷新**: Supabase 的 Access Token 有效期较短（通常 1 小时）。Middleware 负责检查 Token 是否快过期。如果是，它会调用 Supabase 刷新 Token，并通过 `Set-Cookie` Header 将新 Token 发回浏览器。
+    *   **注意**: 必须将 `response` 对象传递回 Next.js 流程，否则新 Cookie 会丢失，导致用户每小时被登出一次。
+*   **路由守卫**:
+    *   **白名单**: `login`, `auth/*`, `static files`。
+    *   **黑名单**: `dashboard`, `prompts`。
+    *   如果未登录访问黑名单 -> Redirect to `/login`。
+    *   如果已登录访问 `/login` -> Redirect to `/dashboard`。
+
+### 3. 多端 Supabase Client
+
+我们根据运行环境不同，封装了三种 Supabase Client：
+
+| Client 类型 | 文件路径 | 用途 | 关键特性 |
+| :--- | :--- | :--- | :--- |
+| **Browser Client** | `lib/supabase/client.ts` | 客户端组件 (`useEffect`, Event Handlers) | 单例模式，自动读取浏览器 Cookie。 |
+| **Server Client** | `lib/supabase/server.ts` | Server Components, Server Actions, Route Handlers | **只读/读写分离**。在 Server Component 中无法设置 Cookie，只能读取。在 Actions 中可以设置。 |
+| **Middleware Client** | `lib/supabase/middleware.ts` | `middleware.ts` | 专门处理 Request/Response 对象的 Cookie 读写。 |
+
+### 4. 数据安全 (Row Level Security)
+
+这是最后一道防线。即便黑客窃取了 Anon Key（这是公开的），也无法绕过 RLS。
+*   **`auth.uid()`**: Supabase 提供的一个特殊 SQL 函数，返回当前 JWT 解析出的 User ID。
+*   **策略**:
+    ```sql
+    CREATE POLICY "Enable insert for authenticated users only"
+    ON "public"."prompts"
+    AS PERMISSIVE FOR INSERT
+    TO authenticated
+    WITH CHECK ((auth.uid() = user_id));
+    ```
+    这条策略保证了用户创建数据时，`user_id` 字段必须等于他们自己的 ID。

@@ -1,50 +1,72 @@
 # 工具链与配置 (Tools & Configuration)
 
-为了保证代码质量和开发体验，项目集成了一系列现代化工具。
+优秀的项目离不开强大的工具链支持。本项目选型注重**速度**和**开发者体验**。
 
 ## 1. Biome (Linting & Formatting)
 
-本项目使用 [Biome](https://biomejs.dev/) 替代了传统的 ESLint + Prettier 组合。
+[Biome](https://biomejs.dev/) 是 Web 开发的下一代工具链。
 
-*   **配置文件**: `biome.json`
-*   **功能**:
-    *   **Linting**: 静态代码分析，发现潜在错误和反模式。
-    *   **Formatting**: 统一代码风格（缩进、引号、分号等）。
-    *   **Import Sorting**: 自动优化和排序 import 语句。
-*   **常用命令**:
-    *   `pnpm lint`: 检查代码问题。
-    *   `pnpm lint:fix`: 自动修复可修复的问题。
-    *   `pnpm format`: 格式化代码。
+### 为什么选择 Biome?
+*   **速度**: 基于 Rust 编写，在大型项目中比 Prettier 快 35 倍，比 ESLint 快 100 倍。
+*   **零配置**: 默认配置已经非常合理，开箱即用。
+*   **统一**: 解决了 "Prettier 和 ESLint 规则冲突" 这个长期存在的痛点。
+
+### 核心功能
+*   **Linter**: 静态分析代码，捕获潜在 Bug（如 `noExplicitAny`，`useExhaustiveDependencies`）。
+*   **Formatter**: 固定的代码风格（2 空格缩进，双引号，尾随逗号等）。
+*   **Organizer**: 自动根据规范排序 import 语句，保持代码整洁。
+
+### 常用命令
+```bash
+pnpm lint      # 检查代码
+pnpm lint:fix  # 自动修复
+pnpm format    # 仅格式化
+```
 
 ## 2. Vitest (Testing)
 
-使用 [Vitest](https://vitest.dev/) 进行单元测试和集成测试。
+[Vitest](https://vitest.dev/) 是专为 Vite 生态设计的单元测试框架。
 
-*   **配置文件**: `vitest.config.ts`
-*   **特点**:
-    *   与 Vite 配置兼容（支持路径别名 `@/*`）。
-    *   速度极快，开箱即用支持 TypeScript。
-*   **测试文件**: 通常位于 `__tests__` 目录或与源文件同级（如 `prompt.test.ts`）。
-*   **运行**: `pnpm test` (在 package.json 中可能未定义，可添加 `"test": "vitest"`).
+### 架构优势
+*   **Vite Native**: 它直接使用 `vite.config.ts` (或 `vitest.config.ts`)。这意味着你项目里的路径别名 (`@/lib/utils`)、插件处理、环境变量加载，在测试中完全一致。无需像 Jest 那样配置 `babel` 或 `ts-jest`。
+*   **Watch Mode**: 利用 Vite 的 HMR 技术，测试文件的重新运行几乎是实时的。
+*   **兼容性**: 提供了兼容 Jest 的 API (`describe`, `it`, `expect`, `vi.fn()`)，迁移成本极低。
+
+### 最佳实践
+*   **单元测试**: 测试纯函数 (`src/lib/utils.ts`) 和独立的 UI 组件。
+*   **集成测试**: 测试 tRPC Router (`src/server/trpc/routers/*.test.ts`)。我们可以 mock 数据库层，直接测试业务逻辑。
 
 ## 3. Husky & Lint-staged (Git Hooks)
 
-在代码提交前自动执行检查，防止坏代码进入仓库。
+为了防止脏代码提交到仓库，我们在 Git 流程中卡点。
 
-*   **Pre-commit Hook**: 当你执行 `git commit` 时触发。
-*   **Lint-staged**: 只检查本次提交修改过的文件。
-    *   对于 `.ts, .tsx` 文件：运行 `biome check --write`。
-    *   这确保了每次提交的代码都是格式化过且无 Lint 错误的。
+*   **Husky**: 管理 Git Hooks。
+*   **Lint-staged**: 这是一个过滤器。它只提取本次 Commit 修改过的文件列表，并传给后续命令。
+    *   **配置**:
+        ```json
+        "*.{ts,tsx,js,jsx}": [
+          "biome check --write"
+        ]
+        ```
+    *   **流程**: `git commit` -> `husky` 触发 -> `lint-staged` 找到修改的 `.ts` 文件 -> 运行 `biome check --write` -> 如果修复了代码，自动 `git add` -> 完成提交。如果无法修复（如逻辑错误），提交失败。
 
-## 4. 环境变量验证
+## 4. 环境变量类型安全
 
-为了防止因缺少环境变量导致的运行时错误，我们在 `src/lib/env.ts` 中实现了验证逻辑。
+文件：`src/lib/env.ts`
 
-*   **原理**: 手动读取 `process.env`，如果缺少必要变量（如 `NEXT_PUBLIC_SUPABASE_URL`），在应用启动时抛出错误。
-*   **类型安全**: 导出的 `env` 对象具有确定的类型，使用时会有自动补全。
+在 Next.js 中，环境变量 (`process.env`) 默认是 `string | undefined`。这很容易导致运行时错误。
+我们使用 `zod` 库来验证环境变量：
+1.  **定义 Schema**: 定义哪些变量是必须的，格式是什么（如 URL）。
+2.  **运行时验证**: 应用启动时立即检查。如果缺少 `NEXT_PUBLIC_SUPABASE_URL`，应用直接崩溃并打印清晰的错误信息，而不是等到用户点击登录时才报错。
+3.  **类型推导**: 导出的 `env` 对象具有精确的 TypeScript 类型。
 
 ## 5. TypeScript 配置
 
-*   **`tsconfig.json`**:
-    *   `"strict": true`: 启用所有严格类型检查选项。
-    *   `"paths"`: 配置路径别名（`@/*` 映射到 `./src/*`），简化导入路径。
+*   **Strict Mode**: 开启所有严格检查（`noImplicitAny`, `strictNullChecks` 等）。
+*   **Path Aliases**:
+    ```json
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+    ```
+    这消除了 `../../../../components/ui/button` 这种地狱式引用。

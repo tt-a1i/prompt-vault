@@ -1,76 +1,88 @@
 # 前端架构 (Frontend Architecture)
 
-前端基于 Next.js 15 构建，采用 App Router 架构，并结合 tRPC 和 TanStack Query 进行数据管理。
+前端架构紧密围绕 **Next.js 15 App Router**、**TanStack Query** 和 **Server Components** 展开，旨在实现极致的性能和优秀的用户体验。
 
-## Next.js App Router
+## 数据流向 (Data Flow)
 
-### 1. 目录结构
-*   **`src/app`**: 所有的路由页面。
-*   **`layout.tsx`**: 定义全局布局，包含 `<html>`、`<body>` 以及全局 Providers。
-*   **`page.tsx`**: 特定路由的页面内容。
+在 App Router 中，数据获取可以发生在服务端（RSC）也可以发生在客户端（Client Components）。
 
-### 2. Server Components vs Client Components
-*   **默认服务端渲染 (RSC)**: `src/app` 下的页面默认是 Server Components。它们在服务端运行，直接生成 HTML，不发送 JS 到客户端。
-*   **客户端组件**: 当需要交互（onClick, useState, useEffect）或使用 React Context 时，必须在文件顶部添加 `"use client"` 指令。
-    *   `src/components/providers/query-provider.tsx` 是一个 Client Component，因为它需要维护 QueryClient 状态。
-    *   tRPC 的 Hook (`useTRPC`) 只能在 Client Components 中使用。
+```mermaid
+graph TD
+    subgraph Server["Server (Next.js)"]
+        RSC[Server Component (page.tsx)]
+        Prefetch[tRPC Caller (Prefetch)]
+        Dehydrate[Dehydrate State]
+    end
 
-## UI 与样式 (UI & Styling)
+    subgraph Client["Client (Browser)"]
+        Provider[TanStack Query Provider]
+        Hydrate[Hydrate State]
+        CC[Client Component (PromptList.tsx)]
+        Hook[useTRPC Hook]
+    end
 
-### 1. Tailwind CSS
-我们使用 Tailwind CSS 进行原子化样式开发。
-*   **`globals.css`**: 包含 Tailwind 的指令 (`@tailwind base;` 等) 和全局 CSS 变量（用于 shadcn/ui 的主题色）。
-*   **`tailwind.config.ts`**: 配置主题扩展、插件 (tailwindcss-animate) 和内容扫描路径。
-
-### 2. shadcn/ui
-项目使用 shadcn/ui 组件库。这些组件不是通过 npm 安装的黑盒包，而是直接复制到 `src/components/ui` 目录下的源代码。
-*   **优点**: 可以完全控制组件代码，随意修改样式和逻辑。
-*   **`cn` helper**: 在 `src/lib/utils.ts` 中，我们定义了 `cn` 函数（结合 `clsx` 和 `tailwind-merge`），用于动态合并 Tailwind 类名并解决冲突。
-
-```typescript
-// 示例
-<div className={cn("bg-red-500", isActive && "bg-green-500")} />
-// 如果 isActive 为 true，结果为 "bg-green-500" (red 被正确覆盖)
+    RSC -- "1. Prefetch Data" --> Prefetch
+    Prefetch -- "2. Pass to Client" --> Dehydrate
+    Dehydrate -- "3. Serialize JSON" --> Provider
+    Provider -- "4. Hydrate Cache" --> Hydrate
+    Hydrate -- "5. Initial Render" --> CC
+    CC -- "6. Refetch/Mutate (Interaction)" --> Hook
+    Hook -- "7. Background Update" --> Provider
 ```
 
-## 数据获取 (Data Fetching) - tRPC & TanStack Query
+### 1. 混合渲染策略 (Hybrid Rendering)
+*   **首屏加载 (Initial Load)**: 利用 Server Components 在服务端直接调用 tRPC (`server/trpc/server.ts`) 获取数据。数据被序列化并传递给客户端的 `HydrationBoundary`。
+*   **客户端交互 (Interaction)**: 页面加载后，Client Components 接管。用户点击翻页或搜索时，通过 `useTRPC` Hook 发起 HTTP 请求更新数据。
+*   **优势**: 结合了 SSR 的 SEO/首屏速度优势和 SPA 的交互体验。
 
-前端不直接使用 `fetch`，而是通过 tRPC Client。
+## UI 组件体系 (Component System)
 
-### 1. `TRPCProvider`
-在 `src/server/trpc/client.ts` 中创建，并在 `src/app/layout.tsx` (通过 `Providers` 组件) 包裹整个应用。这注入了 QueryClient 和 tRPC Client。
+我们采用 **Headless UI + Utility CSS** 的现代组合。
 
-### 2. Hooks 使用
-在组件中，我们像使用本地函数一样请求数据：
+### 1. Tailwind CSS 最佳实践
+*   **Utility-First**: 不写 `.card { ... }`，而是写 `p-4 rounded-xl shadow-sm`。这减少了 CSS 体积增长，避免了命名困难。
+*   **Design Tokens**: 在 `tailwind.config.ts` 中定义颜色、字体、圆角等 Design Tokens。
+    ```typescript
+    // tailwind.config.ts
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "hsl(var(--primary))", // 引用 CSS 变量
+          foreground: "hsl(var(--primary-foreground))",
+        },
+      }
+    }
+    ```
+*   **Dark Mode**: 使用 CSS 变量 (`globals.css`) 实现暗色模式切换，而不是使用 Tailwind 的 `dark:` 前缀（这使得代码更整洁）。
 
-```tsx
-"use client";
-import { useTRPC } from "@/server/trpc/client";
+### 2. shadcn/ui 架构
+*   **Copy-Paste Philosophy**: 组件代码直接存在于项目中 (`src/components/ui`)。你需要修改 Button 的圆角？直接改 `button.tsx`。
+*   **Radix UI**: 这是一个无头组件库，处理了复杂的交互逻辑（如 Dialog 的焦点捕获、Dropdown 的键盘导航）。shadcn/ui 只是给 Radix UI 加上了 Tailwind 的皮肤。
+*   **`cn` Helper**: 核心工具函数。
+    ```typescript
+    import { clsx, type ClassValue } from "clsx"
+    import { twMerge } from "tailwind-merge"
 
-export function PromptList() {
-  // Query: 获取数据
-  const { data, isLoading } = useTRPC.prompt.list.useQuery();
+    // 合并类名，处理条件逻辑 (clsx)，并解决 Tailwind 冲突 (twMerge)
+    export function cn(...inputs: ClassValue[]) {
+      return twMerge(clsx(inputs))
+    }
+    ```
 
-  // Mutation: 修改数据
-  const createPrompt = useTRPC.prompt.create.useMutation({
-    onSuccess: () => {
-      // 自动刷新列表
-      utils.prompt.list.invalidate();
-    },
-  });
+## 状态管理 (State Management)
 
-  if (isLoading) return <div>Loading...</div>;
+### 1. TanStack Query (Server State)
+我们几乎不使用 `useEffect` 来获取数据。TanStack Query 处理了所有服务端状态。
+*   **Stale-While-Revalidate**: 默认配置下，数据被认为是“陈旧”的，但在后台静默刷新。
+*   **Window Focus Refetching**: 用户切出标签页再切回来，自动刷新数据。
+*   **Optimistic Updates**: 在 Mutation 发送前，先手动更新 Cache，让 UI 立即响应。如果请求失败，自动回滚。
 
-  return (
-    <ul>
-      {data?.map(p => <li key={p.id}>{p.title}</li>)}
-    </ul>
-  );
-}
-```
+### 2. URL State (Client State)
+对于搜索框、分页、筛选等状态，我们优先将其同步到 URL Search Params 中，而不是 `useState`。
+*   **好处**: 用户刷新页面或分享链接，状态（如搜索关键词）得以保留。
+*   **实现**: 使用 `useSearchParams` 和 `useRouter`。
 
-*   **Caching**: TanStack Query 会自动缓存数据。当切换页面再回来，如果数据未过期，会立即显示缓存。
-*   **Type Safety**: `data` 的类型完全由后端推导，包含数据库字段。
-
-## 图标
-使用 `lucide-react`，它是一组轻量级、风格统一的 SVG 图标库，作为 React 组件使用。
+## 图标系统
+使用 `lucide-react`。
+*   **特点**: 风格统一、体积小。
+*   **使用**: `<IconName className="w-4 h-4" />`。

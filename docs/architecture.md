@@ -2,36 +2,73 @@
 
 PromptVault 采用了现代化的全栈 TypeScript 架构，旨在提供高性能、类型安全且易于维护的开发体验。
 
+## 系统上下文 (System Context)
+
+以下是 PromptVault 的 C4 System Context 图，展示了用户与系统及其外部依赖的关系。
+
+```mermaid
+C4Context
+    title System Context Diagram for PromptVault
+
+    Person(user, "User", "A user who manages AI prompts")
+    System(promptVault, "PromptVault", "Allows users to store, organize, and retrieve AI prompts")
+
+    System_Ext(supabase, "Supabase", "Auth, Database (Postgres), Realtime")
+    System_Ext(vercel, "Vercel", "Hosting & Edge Network")
+
+    Rel(user, promptVault, "Uses", "HTTPS")
+    Rel(promptVault, supabase, "Reads/Writes Data", "HTTPS/Postgres")
+    Rel(promptVault, vercel, "Hosted on", "Edge Network")
+```
+
 ## 核心技术栈 (Tech Stack)
 
 ### 1. 核心框架 (Core Framework)
-*   **Next.js 15 (App Router)**: 使用 Next.js 最新的 App Router 模式，利用 Server Components (RSC) 减少客户端 JS 体积，提高首屏加载速度。支持流式渲染 (Streaming) 和 Suspense，优化用户体验。
-*   **React 19**: 紧跟 React 最新特性，利用 Server Actions 处理表单提交和数据变更，简化了前后端交互。
+*   **Next.js 15 (App Router)**:
+    *   **架构**: 采用 App Router，利用 React Server Components (RSC) 默认在服务端渲染，减少客户端 Bundle 体积。
+    *   **Turbopack**: 开发环境使用 Turbopack (`next dev --turbopack`)，提供毫秒级的热更新 (HMR)。
+    *   **Streaming**: 利用 React Suspense 实现流式渲染，优先展示 UI 骨架屏，逐步加载数据。
+*   **React 19**:
+    *   **Server Actions**: 直接在 Server Component 中定义异步函数处理表单提交，替代了传统的 API Route 模式，简化了数据变更逻辑。
+    *   **useOptimistic**: 配合 Server Actions 实现乐观 UI 更新，提升用户感知的响应速度。
+    *   **Compiler**: React 19 的编译器自动优化重渲染，减少了 `useMemo` 和 `useCallback` 的手动使用需求。
 
 ### 2. 编程语言 (Language)
-*   **TypeScript 5.x**: 全项目采用严格模式 (Strict Mode)，提供端到端的类型安全。
+*   **TypeScript 5.x**: 全项目采用严格模式 (Strict Mode)。
+    *   **End-to-End Type Safety**: 从数据库 Schema (Supabase) 到 后端 API (tRPC) 再到 前端组件，类型完全打通。修改数据库字段，前端会自动报错。
 
 ### 3. 后端与 API (Backend & API)
 *   **tRPC v11**:
-    *   实现了端到端的类型安全 API，无需手动编写 API 类型定义或生成 SDK。
-    *   v11 版本深度集成了 TanStack Query，提供了更好的缓存策略和数据获取体验。
-    *   后端 Router 定义在 `src/server/trpc/routers`，前端直接调用，享受 IDE 自动补全。
+    *   **Native TanStack Query Integration**: v11 版本移除了旧版 API，深度集成 TanStack Query，提供了更符合直觉的 `queryOptions` 和 `mutationOptions`。
+    *   **Type Inference**: 无需代码生成 (Codegen)，直接推导后端 Router 类型。
+    *   **Middleware**: 使用 tRPC 中间件处理权限验证 (Protected Procedures)。
 *   **Supabase (BaaS)**:
-    *   **PostgreSQL**: 提供强大的关系型数据库支持。
-    *   **Auth**: 处理用户注册、登录和会话管理。
-    *   **Row Level Security (RLS)**: 在数据库层面保证数据安全，确保用户只能访问自己的数据。
-    *   **@supabase/ssr**: 专门用于 Next.js SSR 环境的客户端库，处理 Cookie 和会话同步。
+    *   **PostgreSQL**: 核心数据库，支持复杂的 SQL 查询和 JSONB 数据类型（适合存储灵活的 Prompt 结构）。
+    *   **Auth (GoTrue)**: 提供基于 JWT 的无状态认证，支持 OAuth (GitHub) 和 邮箱/密码登录。
+    *   **Row Level Security (RLS)**: 安全策略下沉至数据库层。例如 `auth.uid() = user_id` 策略确保用户只能访问自己的数据。
+    *   **@supabase/ssr**: 专门适配 Next.js 的 SSR 库，处理 Cookie 的读写（Server Component 只读，Server Action/Route Handler 可写）。
 
 ### 4. 前端与状态管理 (Frontend & State)
-*   **TanStack Query v5**: 与 tRPC 结合，处理异步数据状态（加载中、错误、缓存、重新验证）。
-*   **Tailwind CSS 3.4**: 实用主义 CSS 框架，通过类名快速构建 UI。
-*   **shadcn/ui (基于 Radix UI)**: 提供无障碍、可定制的组件库（代码位于 `src/components/ui`）。
-*   **Lucide React**: 统一的图标库。
+*   **TanStack Query v5**:
+    *   **Server-Side Prefetching**: 在 Server Component 中预取数据，通过 `HydrationBoundary` 传递给客户端，实现首屏即有数据 (No Loading Spinner)。
+    *   **Stale-While-Revalidate**: 智能缓存策略，后台静默更新数据。
+*   **Tailwind CSS 3.4**:
+    *   **JIT Engine**: 按需生成 CSS，生产环境 CSS 文件极小。
+    *   **Configuration**: 通过 `tailwind.config.ts` 自定义颜色系统（CSS 变量）以支持暗色模式。
+*   **shadcn/ui**:
+    *   **Philosophy**: 不是 npm 包，而是复制代码。拥有代码的完全控制权。
+    *   **Radix UI**: 底层使用 Radix UI 无头组件，保证无障碍访问 (A11y) 和键盘导航支持。
+*   **Lucide React**: 统一的 SVG 图标库，支持 Tree Shaking。
 
 ### 5. 工具链 (Tooling)
-*   **Biome**: 下一代 Web 工具链，替代了 ESLint 和 Prettier，提供极速的代码格式化和 Lint 检查。
-*   **Vitest**: 基于 Vite 的单元测试框架，速度极快，兼容 Jest API。
-*   **pnpm**: 高效的包管理器，节省磁盘空间。
+*   **Biome**:
+    *   **Performance**: 基于 Rust 编写，比 ESLint + Prettier 快 30 倍以上。
+    *   **Unified**: 统一了 Linting 和 Formatting，避免了规则冲突。
+*   **Vitest**:
+    *   **Vite Native**: 复用 Vite 配置（路径别名等），无需额外配置 Jest。
+    *   **Watch Mode**: 极速的监听模式，适合 TDD 开发。
+*   **pnpm**:
+    *   **Symlinks**: 使用软链接管理依赖，极大节省磁盘空间并提升安装速度。
 
 ---
 
@@ -41,36 +78,24 @@ PromptVault 采用了现代化的全栈 TypeScript 架构，旨在提供高性�
 src/
 ├── app/                    # Next.js App Router 页面
 │   ├── api/trpc/           # tRPC API 端点 (Route Handler)
-│   ├── auth/               # 认证相关页面
-│   ├── dashboard/          # 受保护的仪表盘页面
+│   ├── auth/               # 认证相关页面 (Callback 处理)
+│   ├── dashboard/          # 受保护的仪表盘页面 (Server Components)
 │   ├── login/              # 登录页面
-│   ├── globals.css         # 全局样式
-│   ├── layout.tsx          # 根布局
-│   └── page.tsx            # 首页
+│   ├── layout.tsx          # 根布局 (包含 Providers)
+│   └── page.tsx            # 落地页
 ├── components/             # React 组件
-│   ├── providers/          # Context Providers (如 TRPCProvider)
-│   └── ui/                 # 通用 UI 组件 (Button, Input 等)
+│   ├── providers/          # 全局 Context Providers (QueryClient, TRPCClient)
+│   └── ui/                 # shadcn/ui 组件 (Button, Input, Dialog 等)
 ├── lib/                    # 核心库与工具
 │   ├── supabase/           # Supabase 客户端配置 (Browser, Server, Middleware)
-│   ├── env.ts              # 环境变量验证
-│   ├── query-client.ts     # QueryClient 配置
-│   └── utils.ts            # 通用辅助函数 (cn 等)
+│   ├── env.ts              # 环境变量 Zod 验证
+│   ├── query-client.ts     # QueryClient 全局配置 (StaleTime 等)
+│   └── utils.ts            # 通用辅助函数 (cn, date formatting)
 ├── server/                 # 服务端逻辑
 │   └── trpc/               # tRPC 核心配置
-│       ├── routers/        # API 路由定义
-│       ├── client.ts       # 客户端 tRPC 实例
-│       ├── init.ts         # tRPC 初始化 (Context, Procedures)
-│       └── server.ts       # 服务端 Caller (Server Components 用)
-└── middleware.ts           # Next.js 中间件 (处理 Auth 重定向)
+│       ├── routers/        # API 路由定义 (PromptRouter, TagRouter)
+│       ├── client.ts       # 客户端 tRPC 实例 (CreateTRPCContext)
+│       ├── init.ts         # tRPC 初始化 (Context, Middlewares, Procedures)
+│       └── server.ts       # 服务端 Caller (Server Components 直接调用)
+└── middleware.ts           # Next.js 中间件 (Auth Redirects & Session Refresh)
 ```
-
-## 数据流向 (Data Flow)
-
-1.  **客户端请求**: 用户在前端组件触发操作 (如点击按钮)。
-2.  **tRPC Client**: 调用 `trpc.prompt.create.useMutation` 等 Hook。
-3.  **HTTP Request**: tRPC Client 将请求打包发送至 `/api/trpc/[trpc]`。
-4.  **Next.js Route Handler**: `src/app/api/trpc/[trpc]/route.ts` 接收请求。
-5.  **tRPC Context**: `src/server/trpc/init.ts` 创建上下文，验证 Supabase Session。
-6.  **Router**: 请求路由到对应的 Procedure (如 `src/server/trpc/routers/prompt.ts`)。
-7.  **Supabase Interaction**: Procedure 调用 `ctx.supabase` 操作数据库。
-8.  **Response**: 结果返回前端，TanStack Query 更新缓存并重新渲染 UI。
