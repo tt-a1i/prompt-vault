@@ -102,16 +102,12 @@
   .card {
     @apply relative rounded-3xl;
     background: hsl(var(--md-surface-container-low));
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .card:hover {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
   }
 
   /* MD3 Card - Filled */
@@ -137,9 +133,7 @@
   }
 
   .btn-primary:hover {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
   }
 
   .btn-primary:hover::before {
@@ -217,16 +211,12 @@
     height: 56px;
     background: hsl(var(--md-primary-container));
     color: hsl(var(--md-on-primary-container));
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .fab:hover {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
   }
 
   /* MD3 Extended FAB */
@@ -235,9 +225,7 @@
     height: 56px;
     background: hsl(var(--md-primary-container));
     color: hsl(var(--md-on-primary-container));
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   }
 
@@ -327,9 +315,7 @@
   .dialog {
     @apply rounded-3xl p-6;
     background: hsl(var(--md-surface-container-high));
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
   }
 
   /* MD3 Scrim/Overlay */
@@ -555,32 +541,22 @@
 
   /* Elevation levels */
   .elevation-1 {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 1px 3px 1px hsl(var(--md-shadow) / 0.15);
   }
 
   .elevation-2 {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 2px 6px 2px hsl(var(--md-shadow) / 0.15);
   }
 
   .elevation-3 {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 4px 8px 3px hsl(var(--md-shadow) / 0.15);
   }
 
   .elevation-4 {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 6px 10px 4px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 6px 10px 4px hsl(var(--md-shadow) / 0.15);
   }
 
   .elevation-5 {
-    box-shadow:
-      0 1px 2px hsl(var(--md-shadow) / 0.3),
-      0 8px 12px 6px hsl(var(--md-shadow) / 0.15);
+    box-shadow: 0 1px 2px hsl(var(--md-shadow) / 0.3), 0 8px 12px 6px hsl(var(--md-shadow) / 0.15);
   }
 }

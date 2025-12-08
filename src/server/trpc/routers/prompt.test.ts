@@ -1,14 +1,13 @@
-
-import { describe, it, expect, vi } from 'vitest';
-import { promptRouter } from './prompt';
-import { createCallerFactory } from '../init';
+import { describe, expect, it, vi } from "vitest";
+import { createCallerFactory } from "../init";
+import { promptRouter } from "./prompt";
 
 // Mock the context
 const createMockCtx = (orSpy: any) => {
   const orderSpy = vi.fn().mockResolvedValue({ data: [], error: null });
   const eqSpy = vi.fn().mockReturnValue({
     or: orSpy,
-    order: orderSpy
+    order: orderSpy,
   });
   const selectSpy = vi.fn().mockReturnValue({ eq: eqSpy });
   const fromSpy = vi.fn().mockReturnValue({ select: selectSpy });
@@ -17,12 +16,12 @@ const createMockCtx = (orSpy: any) => {
     supabase: {
       from: fromSpy,
     },
-    user: { id: 'user-123' },
+    user: { id: "user-123" },
   };
 };
 
-describe('promptRouter.list', () => {
-  it('should escape commas in search query', async () => {
+describe("promptRouter.list", () => {
+  it("should escape commas in search query", async () => {
     // We want to verify that the query string passed to .or() is correctly formatted
     // when the search input contains a comma.
 
@@ -33,22 +32,22 @@ describe('promptRouter.list', () => {
 
     // Chain: .from().select().eq() -> returns object with .or
     const eqSpy = vi.fn().mockReturnValue({
-        or: orSpy,
-        order: orderSpy // In case .or is skipped (not in this test case)
+      or: orSpy,
+      order: orderSpy, // In case .or is skipped (not in this test case)
     });
     const selectSpy = vi.fn().mockReturnValue({ eq: eqSpy });
     const fromSpy = vi.fn().mockReturnValue({ select: selectSpy });
 
     const mockCtx = {
-        supabase: {
-            from: fromSpy
-        },
-        user: { id: 'user-123' }
+      supabase: {
+        from: fromSpy,
+      },
+      user: { id: "user-123" },
     };
 
     const caller = createCallerFactory(promptRouter)(mockCtx as any);
 
-    const searchInput = 'foo,bar';
+    const searchInput = "foo,bar";
     await caller.list({ search: searchInput });
 
     expect(orSpy).toHaveBeenCalled();
